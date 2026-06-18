@@ -46,6 +46,9 @@ interface IptvParser {
         val manifestType: String? = null,
         val licenseType: String? = null,
         val licenseKey: String? = null,
+        val catchup: String? = null,
+        val catchupSource: String? = null,
+        val catchupDays: Int? = null,
     ) {
         companion object {
             private fun List<ChannelItem>.toChannelList(): ChannelList {
@@ -66,6 +69,9 @@ interface IptvParser {
                                             manifestType = it.manifestType,
                                             licenseType = it.licenseType,
                                             licenseKey = it.licenseKey,
+                                            catchup = it.catchup,
+                                            catchupSource = it.catchupSource,
+                                            catchupDays = it.catchupDays,
                                         )
                                     }
                             ),

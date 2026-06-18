@@ -2,6 +2,9 @@ package top.yogiczy.mytv.core.data.utils
 
 import top.yogiczy.mytv.core.data.entities.channel.ChannelLine
 import top.yogiczy.mytv.core.data.entities.channel.ChannelLineList
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 object ChannelUtil {
@@ -187,7 +190,45 @@ object ChannelUtil {
         return listOf("pltv", "tvod").any { url.contains(it, ignoreCase = true) }
     }
 
+    fun urlSupportPlayback(line: ChannelLine): Boolean {
+        return line.catchup != null || line.catchupSource != null || urlSupportPlayback(line.url)
+    }
+
     fun urlToCanPlayback(url: String): String {
         return url.replace("pltv", "TVOD", ignoreCase = true)
+    }
+
+    fun getPlaybackUrl(line: ChannelLine, startAt: Long, endAt: Long): String {
+        val url = line.playableUrl
+        val startTime = Date(startAt)
+        val endTime = Date(endAt)
+
+        var template = line.catchupSource ?: ""
+
+        if (template.isEmpty()) {
+            if (line.catchup == "append" || urlSupportPlayback(line.url)) {
+                val timeFormat = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault())
+                val query = "playseek=${timeFormat.format(startTime)}-${timeFormat.format(endTime)}"
+                template = if (url.contains("?")) "$url&$query" else "$url?$query"
+            } else {
+                template = url
+            }
+        }
+
+        val bRegex = Regex("""\$\{\(b\)(.*?)\}""")
+        template = bRegex.replace(template) { matchResult ->
+            val format = matchResult.groupValues[1]
+            runCatching { SimpleDateFormat(format, Locale.getDefault()).format(startTime) }
+                .getOrDefault(matchResult.value)
+        }
+
+        val eRegex = Regex("""\$\{\(e\)(.*?)\}""")
+        template = eRegex.replace(template) { matchResult ->
+            val format = matchResult.groupValues[1]
+            runCatching { SimpleDateFormat(format, Locale.getDefault()).format(endTime) }
+                .getOrDefault(matchResult.value)
+        }
+
+        return urlToCanPlayback(template)
     }
 }

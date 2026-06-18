@@ -36,9 +36,6 @@ import top.yogiczy.mytv.tv.ui.screen.settings.settingsVM
 import top.yogiczy.mytv.tv.ui.screensold.videoplayer.VideoPlayerState
 import top.yogiczy.mytv.tv.ui.screensold.videoplayer.player.VideoPlayer
 import top.yogiczy.mytv.tv.ui.screensold.videoplayer.rememberVideoPlayerState
-import java.net.URI
-import java.text.SimpleDateFormat
-import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
 
@@ -284,19 +281,17 @@ class MainContentState(
 
         _currentPlaybackEpgProgramme = playbackEpgProgramme
 
-        var url = currentChannelLine.playableUrl
-        if (_currentPlaybackEpgProgramme != null) {
-            val timeFormat = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault())
-            val query = listOf(
-                "playseek=",
-                timeFormat.format(_currentPlaybackEpgProgramme!!.startAt),
-                "-",
-                timeFormat.format(_currentPlaybackEpgProgramme!!.endAt),
-            ).joinToString("")
-            url = if (URI(url).query.isNullOrBlank()) "$url?$query" else "$url&$query"
-            url = ChannelUtil.urlToCanPlayback(url)
+        val line = if (_currentPlaybackEpgProgramme != null) {
+            currentChannelLine.copy(
+                url = ChannelUtil.getPlaybackUrl(
+                    currentChannelLine,
+                    _currentPlaybackEpgProgramme!!.startAt,
+                    _currentPlaybackEpgProgramme!!.endAt,
+                )
+            )
+        } else {
+            currentChannelLine
         }
-        val line = currentChannelLine.copy(url = url)
 
         log.d("播放${_currentChannel.name}（${_currentChannelLineIdx + 1}/${_currentChannel.lineList.size}）: $line")
 
@@ -344,7 +339,7 @@ class MainContentState(
         lineIdx: Int? = _currentChannelLineIdx,
     ): Boolean {
         val currentLineIdx = getLineIdx(channel.lineList, lineIdx)
-        return ChannelUtil.urlSupportPlayback(channel.lineList[currentLineIdx].url)
+        return ChannelUtil.urlSupportPlayback(channel.lineList[currentLineIdx])
     }
 }
 

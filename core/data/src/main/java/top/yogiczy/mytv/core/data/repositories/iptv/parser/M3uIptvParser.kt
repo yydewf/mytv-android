@@ -33,6 +33,12 @@ class M3uIptvParser : IptvParser {
                     val logo = Regex("tvg-logo=\"(.+?)\"").find(line)?.groupValues?.get(1)?.trim()
                     val httpUserAgent =
                         Regex("http-user-agent=\"(.+?)\"").find(line)?.groupValues?.get(1)?.trim()
+                    val catchup = Regex("catchup=\"(.+?)\"").find(line)?.groupValues?.get(1)?.trim()
+                    val catchupSource =
+                        Regex("catchup-source=\"(.+?)\"").find(line)?.groupValues?.get(1)?.trim()
+                    val catchupDays =
+                        Regex("catchup-days=\"(.+?)\"").find(line)?.groupValues?.get(1)?.trim()
+                            ?.toIntOrNull()
 
                     addedChannels = groupNames.map { groupName ->
                         IptvParser.ChannelItem(
@@ -42,6 +48,9 @@ class M3uIptvParser : IptvParser {
                             url = "",
                             logo = logo,
                             httpUserAgent = httpUserAgent,
+                            catchup = catchup,
+                            catchupSource = catchupSource,
+                            catchupDays = catchupDays,
                         )
                     }
                 } else if (line.startsWith("#KODIPROP:inputstream.adaptive.manifest_type")) {
