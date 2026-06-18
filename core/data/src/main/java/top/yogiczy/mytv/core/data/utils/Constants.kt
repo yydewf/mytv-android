@@ -27,14 +27,16 @@ object Constants {
     /**
      * 直播源
      */
-    val IPTV_SOURCE_LIST = IptvSourceList(
-        listOf(
-            IptvSource(
-                name = "IPTV",
-                url = "https://ytwg.top/iptv/bjlth.m3u",
-            ),
-        )
-    )
+    // val IPTV_SOURCE_LIST = IptvSourceList(
+    //     listOf(
+    //         IptvSource(
+    //             name = "IPTV",
+    //             url = "https://ytwg.top/iptv/bjlth.m3u",
+    //         ),
+    //     )
+    // )
+
+    val IPTV_SOURCE_LIST = IptvSourceList(emptyList())
 
     /**
      * 直播源缓存时间（毫秒）
@@ -44,14 +46,16 @@ object Constants {
     /**
      * 节目单来源
      */
-    val EPG_SOURCE_LIST = EpgSourceList(
-        listOf(
-            EpgSource(
-                name = "epg-iptv",
-                url = "https://ytwg.top/epg/e.xml.gz",
-            ),
-        )
-    )
+    // val EPG_SOURCE_LIST = EpgSourceList(
+    //     listOf(
+    //         EpgSource(
+    //             name = "epg-iptv",
+    //             url = "https://ytwg.top/epg/e.xml.gz",
+    //         ),
+    //     )
+    // )
+
+    val EPG_SOURCE_LIST = EpgSourceList(emptyList())
 
     /**
      * 节目单刷新时间阈值（小时）

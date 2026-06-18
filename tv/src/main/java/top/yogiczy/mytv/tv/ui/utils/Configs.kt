@@ -281,7 +281,7 @@ object Configs {
     /** 当前直播源 */
     var iptvSourceCurrent: IptvSource
         get() = Globals.json.decodeFromString(SP.getString(KEY.IPTV_SOURCE_CURRENT.name, "")
-            .ifBlank { Globals.json.encodeToString(Constants.IPTV_SOURCE_LIST.first()) })
+            .ifBlank { Globals.json.encodeToString(Constants.IPTV_SOURCE_LIST.firstOrNull() ?: IptvSource()) })
         set(value) = SP.putString(KEY.IPTV_SOURCE_CURRENT.name, Globals.json.encodeToString(value))
 
     /** 直播源列表 */
@@ -394,7 +394,7 @@ object Configs {
     /** 当前节目单来源 */
     var epgSourceCurrent: EpgSource
         get() = Globals.json.decodeFromString(SP.getString(KEY.EPG_SOURCE_CURRENT.name, "")
-            .ifBlank { Globals.json.encodeToString(Constants.EPG_SOURCE_LIST.first()) })
+            .ifBlank { Globals.json.encodeToString(Constants.EPG_SOURCE_LIST.firstOrNull() ?: EpgSource()) })
         set(value) = SP.putString(KEY.EPG_SOURCE_CURRENT.name, Globals.json.encodeToString(value))
 
     /** 节目单来源列表 */
