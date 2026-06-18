@@ -28,12 +28,15 @@ import androidx.media3.exoplayer.dash.DashMediaSource
 import androidx.media3.exoplayer.drm.DefaultDrmSessionManager
 import androidx.media3.exoplayer.drm.FrameworkMediaDrm
 import androidx.media3.exoplayer.drm.LocalMediaDrmCallback
+import androidx.media3.exoplayer.hls.DefaultHlsExtractorFactory
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.rtsp.RtspMediaSource
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.util.EventLogger
+import androidx.media3.extractor.DefaultExtractorsFactory
+import androidx.media3.extractor.ts.DefaultTsPayloadReaderFactory
 import com.google.common.collect.ImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -149,7 +152,14 @@ class Media3VideoPlayer(
         val dataSourceFactory = getDataSourceFactory()
         return when (contentTypeForce ?: Util.inferContentType(uri)) {
             C.CONTENT_TYPE_HLS -> {
-                HlsMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
+                HlsMediaSource.Factory(dataSourceFactory)
+                    .setExtractorFactory(
+                        DefaultHlsExtractorFactory(
+                            DefaultTsPayloadReaderFactory.FLAG_DETECT_ACCESS_UNITS,
+                            true
+                        )
+                    )
+                    .createMediaSource(mediaItem)
             }
 
             C.CONTENT_TYPE_DASH -> {
@@ -199,7 +209,11 @@ class Media3VideoPlayer(
             }
 
             C.CONTENT_TYPE_OTHER -> {
-                ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
+                val extractorsFactory = DefaultExtractorsFactory()
+                    .setTsExtractorFlags(DefaultTsPayloadReaderFactory.FLAG_DETECT_ACCESS_UNITS)
+
+                ProgressiveMediaSource.Factory(dataSourceFactory, extractorsFactory)
+                    .createMediaSource(mediaItem)
             }
 
             else -> {

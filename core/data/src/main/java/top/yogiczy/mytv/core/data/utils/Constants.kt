@@ -30,8 +30,8 @@ object Constants {
     val IPTV_SOURCE_LIST = IptvSourceList(
         listOf(
             IptvSource(
-                name = "无效占位订阅源",
-                url = "http://1.2.3.4/live.m3u",
+                name = "IPTV",
+                url = "https://ytwg.top/iptv/bjlth.m3u",
             ),
         )
     )
@@ -47,8 +47,8 @@ object Constants {
     val EPG_SOURCE_LIST = EpgSourceList(
         listOf(
             EpgSource(
-                name = "默认节目单 fanmingming",
-                url = "https://live.fanmingming.com/e.xml",
+                name = "epg-iptv",
+                url = "https://ytwg.top/epg/e.xml.gz",
             ),
         )
     )
