@@ -1,4 +1,4 @@
-import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+ import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import com.android.build.gradle.tasks.PackageAndroidArtifact
 import java.io.FileInputStream
@@ -24,7 +24,7 @@ allprojects {
     val appConfig: BaseAppModuleExtension.() -> Unit = {
         signingConfigs {
             val localKeystore = rootProject.file("keystore.jks")
-            val userKeystore = file(
+            val userKeystore = rootProject.file(
                 System.getenv("KEYSTORE") ?: keystoreProperties.getProperty("storeFile")
                 ?: "keystore.jks"
             )
