@@ -38,7 +38,11 @@ fun EpgProgrammeItemList(
     val epgProgrammeList = epgProgrammeListProvider()
     val itemFocusRequesterList = List(epgProgrammeList.size) { FocusRequester() }
 
-    val listState = LazyListState(max(0, epgProgrammeList.indexOfFirst { it.isLive() } - 2))
+    val initialIndex = epgProgrammeList.indexOf(currentPlaybackProvider()).let {
+        if (it != -1) it
+        else epgProgrammeList.indexOfFirst { it.isLive() }
+    }
+    val listState = LazyListState(max(0, initialIndex - 2))
     LaunchedEffect(listState) {
         snapshotFlow { listState.isScrollInProgress }
             .distinctUntilChanged()
@@ -59,15 +63,24 @@ fun EpgProgrammeItemList(
             epgProgrammeList,
             key = { _, programme -> programme.hashCode() },
         ) { index, programme ->
+            val isPlayback = currentPlaybackProvider() == programme
+            val isInitialFocus = if (epgProgrammeList.contains(currentPlaybackProvider())) {
+                isPlayback
+            } else {
+                programme.isLive()
+            }
+
             EpgProgrammeItem(
                 modifier = Modifier.focusRequester(itemFocusRequesterList[index]),
                 epgProgrammeProvider = { programme },
                 supportPlaybackProvider = supportPlaybackProvider,
-                isPlaybackProvider = { currentPlaybackProvider() == programme },
-                hasReservedProvider = { epgProgrammeReserveListProvider().firstOrNull { it.programme == programme.title } != null },
+                isPlaybackProvider = { isPlayback },
+                hasReservedProvider = {
+                    epgProgrammeReserveListProvider().firstOrNull { it.programme == programme.title } != null
+                },
                 onPlayback = { onPlayback(programme) },
                 onReserve = { onReserve(programme) },
-                focusOnLive = focusOnLive,
+                focusOnLive = isInitialFocus && focusOnLive,
             )
         }
     }

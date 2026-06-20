@@ -53,26 +53,30 @@ fun EpgProgrammeItem(
 ) {
     val programme = epgProgrammeProvider()
     val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-    val isSelected = remember { programme.isLive() }
+    val isPlayback = isPlaybackProvider()
+    val isLive = programme.isLive()
 
     var isFocused by remember { mutableStateOf(false) }
 
     val colorScheme = MaterialTheme.colorScheme
     val localContentColor = LocalContentColor.current
-    val containerColor = remember(isFocused, isSelected) {
+    val containerColor = remember(isFocused, isLive, isPlayback) {
         if (isFocused) colorScheme.onSurface
-        else if (isSelected) colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        else if (isLive || isPlayback) colorScheme.surfaceVariant.copy(alpha = 0.5f)
         else Color.Transparent
     }
-    val contentColor = remember(isFocused, isSelected) {
+    val contentColor = remember(isFocused, isLive, isPlayback) {
         if (isFocused) colorScheme.surface
-        else if (isSelected) colorScheme.onSurface
+        else if (isLive || isPlayback) colorScheme.onSurface
         else localContentColor
     }
 
     Box(
         modifier = modifier
-            .ifElse(programme.isLive() && focusOnLive, Modifier.focusOnLaunchedSaveable())
+            .ifElse(
+                (isPlayback || (isLive && focusOnLive)) && focusOnLive,
+                Modifier.focusOnLaunchedSaveable()
+            )
             .onFocusChanged { isFocused = it.isFocused || it.hasFocus }
             .focusable()
             .fillMaxWidth()

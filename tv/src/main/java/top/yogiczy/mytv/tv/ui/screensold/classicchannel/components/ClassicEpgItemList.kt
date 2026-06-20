@@ -44,7 +44,14 @@ fun ClassicEpgItemList(
     val epg = epgProvider() ?: return
     val dateFormat = SimpleDateFormat("E MM-dd", Locale.getDefault())
     val programDayGroup = epg.programmeList.groupBy { dateFormat.format(it.startAt) }
-    var currentDay by remember { mutableStateOf(dateFormat.format(System.currentTimeMillis())) }
+
+    val currentPlayback = currentPlaybackEpgProgrammeProvider()
+    val initialDay = if (currentPlayback != null && epg.programmeList.contains(currentPlayback)) {
+        dateFormat.format(currentPlayback.startAt)
+    } else {
+        dateFormat.format(System.currentTimeMillis())
+    }
+    var currentDay by remember { mutableStateOf(initialDay) }
 
     Row(
         modifier = modifier
