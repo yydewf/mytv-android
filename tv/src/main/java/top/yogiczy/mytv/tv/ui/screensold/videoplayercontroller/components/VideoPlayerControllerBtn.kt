@@ -16,7 +16,7 @@ fun VideoPlayerControllerBtn(
     IconButton(
         modifier = modifier
             .handleKeyEvents(onSelect = onSelect),
-        onClick = {},
+        onClick = onSelect,
     ) {
         content()
     }

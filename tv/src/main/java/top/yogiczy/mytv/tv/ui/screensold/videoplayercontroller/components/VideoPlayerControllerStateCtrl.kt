@@ -31,8 +31,8 @@ fun VideoPlayerControllerStateCtrl(
     VideoPlayerControllerBtn(
         modifier = modifier,
         onSelect = {
-            if (!isBuffering) {
-                if (isPlaying) onPause()
+            if (!isBufferingProvider()) {
+                if (isPlayingProvider()) onPause()
                 else onPlay()
             }
         },

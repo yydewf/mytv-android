@@ -528,11 +528,20 @@ class Media3VideoPlayer(
     }
 
     override fun play() {
-        videoPlayer.play()
+        if (videoPlayer.playbackState == Player.STATE_IDLE || videoPlayer.playbackState == Player.STATE_ENDED) {
+            videoPlayer.prepare()
+        }
+
+        videoPlayer.playWhenReady = true
+
+        // 针对回看/直播源，如果当前没有正在播放（可能连接已断开），尝试触发重新准备
+        if (!videoPlayer.isPlaying && videoPlayer.playbackState == Player.STATE_READY) {
+            videoPlayer.prepare()
+        }
     }
 
     override fun pause() {
-        videoPlayer.pause()
+        videoPlayer.playWhenReady = false
     }
 
     override fun seekTo(position: Long) {
