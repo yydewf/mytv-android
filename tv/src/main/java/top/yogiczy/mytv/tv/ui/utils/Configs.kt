@@ -92,6 +92,9 @@ object Configs {
         /** 上一次播放节目（回放） */
         IPTV_CHANNEL_LAST_PLAYBACK_PROGRAMME,
 
+        /** 上一次播放位置（回放） */
+        IPTV_CHANNEL_LAST_PLAYBACK_POSITION,
+
         /** 直播源线路可播放host列表 */
         IPTV_CHANNEL_LINE_PLAYABLE_HOST_LIST,
 
@@ -372,6 +375,11 @@ object Configs {
             KEY.IPTV_CHANNEL_LAST_PLAYBACK_PROGRAMME.name,
             value?.let { Globals.json.encodeToString(value) } ?: ""
         )
+
+    /** 上一次播放位置（回放） */
+    var iptvChannelLastPlaybackPosition: Long
+        get() = SP.getLong(KEY.IPTV_CHANNEL_LAST_PLAYBACK_POSITION.name, 0L)
+        set(value) = SP.putLong(KEY.IPTV_CHANNEL_LAST_PLAYBACK_POSITION.name, value)
 
     /** 直播源线路可播放host列表 */
     var iptvChannelLinePlayableHostList: Set<String>
@@ -723,6 +731,7 @@ object Configs {
             iptvChannelFavoriteList = iptvChannelFavoriteList,
             iptvChannelLastPlay = iptvChannelLastPlay,
             iptvChannelLastPlaybackProgramme = iptvChannelLastPlaybackProgramme,
+            iptvChannelLastPlaybackPosition = iptvChannelLastPlaybackPosition,
             iptvChannelLinePlayableHostList = iptvChannelLinePlayableHostList,
             iptvChannelLinePlayableUrlList = iptvChannelLinePlayableUrlList,
             iptvChannelChangeFlip = iptvChannelChangeFlip,
@@ -794,6 +803,7 @@ object Configs {
         configs.iptvChannelFavoriteList?.let { iptvChannelFavoriteList = it }
         configs.iptvChannelLastPlay?.let { iptvChannelLastPlay = it }
         configs.iptvChannelLastPlaybackProgramme?.let { iptvChannelLastPlaybackProgramme = it }
+        configs.iptvChannelLastPlaybackPosition?.let { iptvChannelLastPlaybackPosition = it }
         configs.iptvChannelLinePlayableHostList?.let { iptvChannelLinePlayableHostList = it }
         configs.iptvChannelLinePlayableUrlList?.let { iptvChannelLinePlayableUrlList = it }
         configs.iptvChannelChangeFlip?.let { iptvChannelChangeFlip = it }
@@ -866,6 +876,7 @@ object Configs {
         val iptvChannelFavoriteList: ChannelFavoriteList? = null,
         val iptvChannelLastPlay: Channel? = null,
         val iptvChannelLastPlaybackProgramme: EpgProgramme? = null,
+        val iptvChannelLastPlaybackPosition: Long? = null,
         val iptvChannelLinePlayableHostList: Set<String>? = null,
         val iptvChannelLinePlayableUrlList: Set<String>? = null,
         val iptvChannelChangeFlip: Boolean? = null,
@@ -926,6 +937,7 @@ object Configs {
             cloudSyncWebDavPassword = null,
             iptvChannelLastPlay = null,
             iptvChannelLastPlaybackProgramme = null,
+            iptvChannelLastPlaybackPosition = null,
             iptvChannelLinePlayableHostList = null,
             iptvChannelLinePlayableUrlList = null,
         )

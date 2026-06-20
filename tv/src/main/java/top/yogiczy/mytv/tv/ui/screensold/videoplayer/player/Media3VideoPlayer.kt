@@ -248,9 +248,13 @@ class Media3VideoPlayer(
                 // 如果是直播加载位置错误，尝试重新播放
                 androidx.media3.common.PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW,
                 androidx.media3.common.PlaybackException.ERROR_CODE_DECODING_FAILED,
-                androidx.media3.common.PlaybackException.ERROR_CODE_IO_UNSPECIFIED -> {
-                    videoPlayer.seekToDefaultPosition()
+                androidx.media3.common.PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
+                androidx.media3.common.PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
+                androidx.media3.common.PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED -> {
+                    val currentPos = videoPlayer.currentPosition
                     videoPlayer.prepare()
+                    videoPlayer.seekTo(currentPos)
+                    videoPlayer.play()
                 }
 
                 // 当解析容器不支持时，尝试使用其他解析容器
@@ -306,10 +310,14 @@ class Media3VideoPlayer(
                 updatePositionJob?.cancel()
                 updatePositionJob = coroutineScope.launch {
                     while (true) {
-                        val livePosition =
-                            System.currentTimeMillis() - videoPlayer.currentLiveOffset
+                        val currentPos = videoPlayer.currentPosition
+                        val livePosition = System.currentTimeMillis() - videoPlayer.currentLiveOffset
 
-                        triggerCurrentPosition(if (livePosition > 0) livePosition else videoPlayer.currentPosition)
+                        // 只有在真正的直播流时 livePosition 才会接近当前时间，回放流应直接使用 currentPos
+                        triggerCurrentPosition(
+                            if (livePosition > System.currentTimeMillis() - 86400000 * 30) livePosition
+                            else currentPos
+                        )
                         delay(500)
                     }
                 }
@@ -528,7 +536,14 @@ class Media3VideoPlayer(
     }
 
     override fun seekTo(position: Long) {
-        videoPlayer.seekTo(position)
+        // 边界保护，防止跳过头
+        val seekPos = if (videoPlayer.duration > 0) {
+            maxOf(0, minOf(position, videoPlayer.duration - 1000))
+        } else position
+
+        videoPlayer.seekTo(seekPos)
+        // 跳转后显式确保播放，解决部分流跳转后不自动恢复的问题
+        videoPlayer.play()
     }
 
     override fun setVolume(volume: Float) {

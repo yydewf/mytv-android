@@ -221,6 +221,15 @@ class SettingsViewModel : ViewModel() {
             afterSetWhenCloudSyncAutoPull()
         }
 
+    private var _iptvChannelLastPlaybackPosition by mutableLongStateOf(0L)
+    var iptvChannelLastPlaybackPosition: Long
+        get() = _iptvChannelLastPlaybackPosition
+        set(value) {
+            _iptvChannelLastPlaybackPosition = value
+            Configs.iptvChannelLastPlaybackPosition = value
+            afterSetWhenCloudSyncAutoPull()
+        }
+
     private var _iptvChannelLinePlayableHostList by mutableStateOf(emptySet<String>())
     var iptvChannelLinePlayableHostList: Set<String>
         get() = _iptvChannelLinePlayableHostList
@@ -653,6 +662,7 @@ class SettingsViewModel : ViewModel() {
         _iptvChannelFavoriteList = Configs.iptvChannelFavoriteList
         _iptvChannelLastPlay = Configs.iptvChannelLastPlay
         _iptvChannelLastPlaybackProgramme = Configs.iptvChannelLastPlaybackProgramme
+        _iptvChannelLastPlaybackPosition = Configs.iptvChannelLastPlaybackPosition
         _iptvChannelLinePlayableHostList = Configs.iptvChannelLinePlayableHostList
         _iptvChannelLinePlayableUrlList = Configs.iptvChannelLinePlayableUrlList
         _iptvChannelChangeFlip = Configs.iptvChannelChangeFlip

@@ -107,6 +107,7 @@ class VideoPlayerState(
     private val onErrorListeners = mutableListOf<() -> Unit>()
     private val onInterruptListeners = mutableListOf<() -> Unit>()
     private val onIsBufferingListeners = mutableListOf<(Boolean) -> Unit>()
+    private val onPositionListeners = mutableListOf<(Long) -> Unit>()
 
     fun onReady(listener: () -> Unit) {
         onReadyListeners.add(listener)
@@ -122,6 +123,10 @@ class VideoPlayerState(
 
     fun onIsBuffering(listener: (Boolean) -> Unit) {
         onIsBufferingListeners.add(listener)
+    }
+
+    fun onPosition(listener: (Long) -> Unit) {
+        onPositionListeners.add(listener)
     }
 
     fun initialize() {
@@ -148,6 +153,7 @@ class VideoPlayerState(
         instance.onIsPlayingChanged { isPlaying = it }
         instance.onDurationChanged { duration = it }
         instance.onCurrentPositionChanged { currentPosition = it }
+        instance.onPosition { onPositionListeners.forEach { cb -> cb(it) } }
         instance.onMetadata { metadata = it }
         instance.onInterrupt { onInterruptListeners.forEach { it.invoke() } }
     }
@@ -157,6 +163,7 @@ class VideoPlayerState(
         onErrorListeners.clear()
         onInterruptListeners.clear()
         onIsBufferingListeners.clear()
+        onPositionListeners.clear()
         instance.release()
     }
 }

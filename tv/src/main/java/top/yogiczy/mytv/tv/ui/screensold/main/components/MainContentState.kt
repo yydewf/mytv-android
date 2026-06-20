@@ -47,6 +47,8 @@ class MainContentState(
     private val favoriteChannelListProvider: () -> ChannelList = { ChannelList() },
     private val settingsViewModel: SettingsViewModel,
 ) : Loggable("MainContentState") {
+    private var isInitialPlayback = true
+
     private var _currentChannel by mutableStateOf(Channel())
     val currentChannel get() = _currentChannel
 
@@ -143,6 +145,20 @@ class MainContentState(
         videoPlayerState.onReady {
             settingsViewModel.iptvChannelLinePlayableUrlList += currentChannelLine.url
             settingsViewModel.iptvChannelLinePlayableHostList += currentChannelLine.url.urlHost()
+
+            if (isInitialPlayback) {
+                val savedPosition = settingsViewModel.iptvChannelLastPlaybackPosition
+                if (savedPosition > 0) {
+                    // 必须先重置，防止 seekTo 完成后再次触发 onReady 导致死循环
+                    settingsViewModel.iptvChannelLastPlaybackPosition = 0
+
+                    // 只有在进度没到最后 10 秒时才恢复
+                    if (videoPlayerState.duration == 0L || savedPosition < videoPlayerState.duration - 10000) {
+                        videoPlayerState.seekTo(savedPosition)
+                    }
+                }
+                isInitialPlayback = false
+            }
         }
 
         videoPlayerState.onError {
@@ -175,6 +191,20 @@ class MainContentState(
                     delay(Constants.UI_TEMP_CHANNEL_SCREEN_SHOW_DURATION)
                     if (name == _currentChannel.name && lineIdx == _currentChannelLineIdx) {
                         _isTempChannelScreenVisible = false
+                    }
+                }
+            }
+        }
+
+        videoPlayerState.onPosition { position ->
+            if (_currentPlaybackEpgProgramme != null) {
+                // 只有在非缓冲且正在播放状态下才保存进度，避免保存跳转过程中的中间值
+                if (!videoPlayerState.isBuffering && videoPlayerState.isPlaying) {
+                    // 如果快到结尾了（最后 5 秒），就不要保存进度了，视为播放完成
+                    if (videoPlayerState.duration > 0 && position > videoPlayerState.duration - 5000) {
+                        settingsViewModel.iptvChannelLastPlaybackPosition = 0
+                    } else {
+                        settingsViewModel.iptvChannelLastPlaybackPosition = position
                     }
                 }
             }
@@ -268,6 +298,13 @@ class MainContentState(
         lineIdx: Int? = null,
         playbackEpgProgramme: EpgProgramme? = null,
     ) {
+        isInitialPlayback = true
+
+        // 如果选择的是新节目，重置保存的进度
+        if (playbackEpgProgramme != settingsViewModel.iptvChannelLastPlaybackProgramme) {
+            settingsViewModel.iptvChannelLastPlaybackPosition = 0
+        }
+
         settingsViewModel.iptvChannelLastPlay = channel
         settingsViewModel.iptvChannelLastPlaybackProgramme = playbackEpgProgramme
 
