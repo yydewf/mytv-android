@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import top.yogiczy.mytv.core.data.entities.channel.Channel
 import top.yogiczy.mytv.core.data.entities.channel.ChannelFavoriteList
+import top.yogiczy.mytv.core.data.entities.epg.EpgProgramme
 import top.yogiczy.mytv.core.data.entities.epg.EpgProgrammeReserveList
 import top.yogiczy.mytv.core.data.entities.epgsource.EpgSource
 import top.yogiczy.mytv.core.data.entities.epgsource.EpgSourceList
@@ -87,6 +88,9 @@ object Configs {
 
         /** 上一次播放频道 */
         IPTV_CHANNEL_LAST_PLAY,
+
+        /** 上一次播放节目（回放） */
+        IPTV_CHANNEL_LAST_PLAYBACK_PROGRAMME,
 
         /** 直播源线路可播放host列表 */
         IPTV_CHANNEL_LINE_PLAYABLE_HOST_LIST,
@@ -357,6 +361,16 @@ object Configs {
         set(value) = SP.putString(
             KEY.IPTV_CHANNEL_LAST_PLAY.name,
             Globals.json.encodeToString(value)
+        )
+
+    /** 上一次播放节目（回放） */
+    var iptvChannelLastPlaybackProgramme: EpgProgramme?
+        get() = SP.getString(KEY.IPTV_CHANNEL_LAST_PLAYBACK_PROGRAMME.name, "").let {
+            if (it.isBlank()) null else Globals.json.decodeFromString(it)
+        }
+        set(value) = SP.putString(
+            KEY.IPTV_CHANNEL_LAST_PLAYBACK_PROGRAMME.name,
+            value?.let { Globals.json.encodeToString(value) } ?: ""
         )
 
     /** 直播源线路可播放host列表 */
@@ -708,6 +722,7 @@ object Configs {
             iptvChannelFavoriteListVisible = iptvChannelFavoriteListVisible,
             iptvChannelFavoriteList = iptvChannelFavoriteList,
             iptvChannelLastPlay = iptvChannelLastPlay,
+            iptvChannelLastPlaybackProgramme = iptvChannelLastPlaybackProgramme,
             iptvChannelLinePlayableHostList = iptvChannelLinePlayableHostList,
             iptvChannelLinePlayableUrlList = iptvChannelLinePlayableUrlList,
             iptvChannelChangeFlip = iptvChannelChangeFlip,
@@ -778,6 +793,7 @@ object Configs {
         configs.iptvChannelFavoriteListVisible?.let { iptvChannelFavoriteListVisible = it }
         configs.iptvChannelFavoriteList?.let { iptvChannelFavoriteList = it }
         configs.iptvChannelLastPlay?.let { iptvChannelLastPlay = it }
+        configs.iptvChannelLastPlaybackProgramme?.let { iptvChannelLastPlaybackProgramme = it }
         configs.iptvChannelLinePlayableHostList?.let { iptvChannelLinePlayableHostList = it }
         configs.iptvChannelLinePlayableUrlList?.let { iptvChannelLinePlayableUrlList = it }
         configs.iptvChannelChangeFlip?.let { iptvChannelChangeFlip = it }
@@ -849,6 +865,7 @@ object Configs {
         val iptvChannelFavoriteListVisible: Boolean? = null,
         val iptvChannelFavoriteList: ChannelFavoriteList? = null,
         val iptvChannelLastPlay: Channel? = null,
+        val iptvChannelLastPlaybackProgramme: EpgProgramme? = null,
         val iptvChannelLinePlayableHostList: Set<String>? = null,
         val iptvChannelLinePlayableUrlList: Set<String>? = null,
         val iptvChannelChangeFlip: Boolean? = null,
@@ -908,6 +925,7 @@ object Configs {
             cloudSyncWebDavUsername = null,
             cloudSyncWebDavPassword = null,
             iptvChannelLastPlay = null,
+            iptvChannelLastPlaybackProgramme = null,
             iptvChannelLinePlayableHostList = null,
             iptvChannelLinePlayableUrlList = null,
         )

@@ -212,6 +212,15 @@ class SettingsViewModel : ViewModel() {
             afterSetWhenCloudSyncAutoPull()
         }
 
+    private var _iptvChannelLastPlaybackProgramme by mutableStateOf<top.yogiczy.mytv.core.data.entities.epg.EpgProgramme?>(null)
+    var iptvChannelLastPlaybackProgramme: top.yogiczy.mytv.core.data.entities.epg.EpgProgramme?
+        get() = _iptvChannelLastPlaybackProgramme
+        set(value) {
+            _iptvChannelLastPlaybackProgramme = value
+            Configs.iptvChannelLastPlaybackProgramme = value
+            afterSetWhenCloudSyncAutoPull()
+        }
+
     private var _iptvChannelLinePlayableHostList by mutableStateOf(emptySet<String>())
     var iptvChannelLinePlayableHostList: Set<String>
         get() = _iptvChannelLinePlayableHostList
@@ -643,6 +652,7 @@ class SettingsViewModel : ViewModel() {
         _iptvChannelFavoriteListVisible = Configs.iptvChannelFavoriteListVisible
         _iptvChannelFavoriteList = Configs.iptvChannelFavoriteList
         _iptvChannelLastPlay = Configs.iptvChannelLastPlay
+        _iptvChannelLastPlaybackProgramme = Configs.iptvChannelLastPlaybackProgramme
         _iptvChannelLinePlayableHostList = Configs.iptvChannelLinePlayableHostList
         _iptvChannelLinePlayableUrlList = Configs.iptvChannelLinePlayableUrlList
         _iptvChannelChangeFlip = Configs.iptvChannelChangeFlip

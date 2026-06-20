@@ -133,9 +133,12 @@ class MainContentState(
     init {
         val channelGroupList = channelGroupListProvider()
 
-        changeCurrentChannel(settingsViewModel.iptvChannelLastPlay.isEmptyOrElse {
-            channelGroupList.channelFirstOrNull() ?: Channel.EMPTY
-        })
+        changeCurrentChannel(
+            settingsViewModel.iptvChannelLastPlay.isEmptyOrElse {
+                channelGroupList.channelFirstOrNull() ?: Channel.EMPTY
+            },
+            playbackEpgProgramme = settingsViewModel.iptvChannelLastPlaybackProgramme,
+        )
 
         videoPlayerState.onReady {
             settingsViewModel.iptvChannelLinePlayableUrlList += currentChannelLine.url
@@ -266,6 +269,7 @@ class MainContentState(
         playbackEpgProgramme: EpgProgramme? = null,
     ) {
         settingsViewModel.iptvChannelLastPlay = channel
+        settingsViewModel.iptvChannelLastPlaybackProgramme = playbackEpgProgramme
 
         if (channel == _currentChannel && lineIdx == _currentChannelLineIdx && playbackEpgProgramme == _currentPlaybackEpgProgramme) return
 
