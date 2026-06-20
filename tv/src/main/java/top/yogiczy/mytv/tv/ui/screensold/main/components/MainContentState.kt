@@ -135,11 +135,17 @@ class MainContentState(
     init {
         val channelGroupList = channelGroupListProvider()
 
+        // 如果回放节目太老了（超过10天），就直接直播
+        val savedPlayback = settingsViewModel.iptvChannelLastPlaybackProgramme
+        val isWayTooOld = savedPlayback?.let {
+            System.currentTimeMillis() - it.startAt > 10L * 24 * 3600 * 1000
+        } ?: false
+
         changeCurrentChannel(
             settingsViewModel.iptvChannelLastPlay.isEmptyOrElse {
                 channelGroupList.channelFirstOrNull() ?: Channel.EMPTY
             },
-            playbackEpgProgramme = settingsViewModel.iptvChannelLastPlaybackProgramme,
+            playbackEpgProgramme = if (isWayTooOld) null else savedPlayback,
         )
 
         videoPlayerState.onReady {
@@ -162,7 +168,13 @@ class MainContentState(
         }
 
         videoPlayerState.onError {
-            if (_currentPlaybackEpgProgramme != null) return@onError
+            if (_currentPlaybackEpgProgramme != null) {
+                log.w("回放失败（可能已过期），正在自动切换到直播...")
+                settingsViewModel.iptvChannelLastPlaybackProgramme = null
+                settingsViewModel.iptvChannelLastPlaybackPosition = 0
+                changeCurrentChannel(_currentChannel, _currentChannelLineIdx)
+                return@onError
+            }
 
             settingsViewModel.iptvChannelLinePlayableUrlList -= currentChannelLine.url
             settingsViewModel.iptvChannelLinePlayableHostList -= currentChannelLine.url.urlHost()
