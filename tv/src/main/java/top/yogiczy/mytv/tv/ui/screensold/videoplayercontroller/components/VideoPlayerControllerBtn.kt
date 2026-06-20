@@ -16,7 +16,7 @@ fun VideoPlayerControllerBtn(
     IconButton(
         modifier = modifier
             .handleKeyEvents(onSelect = onSelect),
-        onClick = onSelect,
+        onClick = { /* 遥控器点击由 handleKeyEvents 处理并消费，此处留空防止冲突 */ },
     ) {
         content()
     }

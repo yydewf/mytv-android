@@ -83,14 +83,15 @@ fun Modifier.handleKeyEvents(
             }
 
             KeyEvent.ACTION_UP -> {
+                var handled = false
                 if (keyDownMap[it.nativeKeyEvent.keyCode] == true) {
                     keyDownMap.remove(it.nativeKeyEvent.keyCode)
                     onKeyTap[it.nativeKeyEvent.keyCode]?.invoke()
 
-                    onKeyTap[it.nativeKeyEvent.keyCode] != null
+                    handled = onKeyTap[it.nativeKeyEvent.keyCode] != null
                 }
 
-                false
+                handled
             }
 
             else -> false
