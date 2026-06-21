@@ -23,6 +23,8 @@ import top.yogiczy.mytv.core.data.entities.channel.ChannelGroupList.Companion.ch
 import top.yogiczy.mytv.core.data.entities.channel.ChannelLine
 import top.yogiczy.mytv.core.data.entities.channel.ChannelLineList
 import top.yogiczy.mytv.core.data.entities.channel.ChannelList
+import top.yogiczy.mytv.core.data.entities.epg.EpgList
+import top.yogiczy.mytv.core.data.entities.epg.EpgList.Companion.match
 import top.yogiczy.mytv.core.data.entities.epg.EpgProgramme
 import top.yogiczy.mytv.core.data.entities.epg.EpgProgrammeReserve
 import top.yogiczy.mytv.core.data.entities.epg.EpgProgrammeReserveList
@@ -45,6 +47,7 @@ class MainContentState(
     private val videoPlayerState: VideoPlayerState,
     private val channelGroupListProvider: () -> ChannelGroupList = { ChannelGroupList() },
     private val favoriteChannelListProvider: () -> ChannelList = { ChannelList() },
+    private val epgListProvider: () -> EpgList = { EpgList() },
     private val settingsViewModel: SettingsViewModel,
 ) : Loggable("MainContentState") {
     private var isInitialPlayback = true
@@ -219,6 +222,28 @@ class MainContentState(
                         settingsViewModel.iptvChannelLastPlaybackPosition = position
                     }
                 }
+            }
+        }
+
+        videoPlayerState.onEnded {
+            if (_currentPlaybackEpgProgramme == null) return@onEnded
+
+            val epg = epgListProvider().match(_currentChannel)
+            val currentIdx = epg?.programmeList?.indexOf(_currentPlaybackEpgProgramme) ?: -1
+
+            if (currentIdx != -1 && currentIdx < (epg?.programmeList?.size ?: 0) - 1) {
+                val nextProgramme = epg!!.programmeList[currentIdx + 1]
+
+                if (nextProgramme.endAt <= System.currentTimeMillis()) {
+                    // 下一个节目的结束时间在过去，说明它是一个完整的回放节目
+                    changeCurrentChannel(_currentChannel, _currentChannelLineIdx, nextProgramme)
+                } else {
+                    // 下一个节目结束时间在未来（正在直播或未开始），返回直播
+                    changeCurrentChannel(_currentChannel, _currentChannelLineIdx)
+                }
+            } else {
+                // 已经是最后一个节目或没找到，返回直播
+                changeCurrentChannel(_currentChannel, _currentChannelLineIdx)
             }
         }
     }
@@ -402,6 +427,7 @@ fun rememberMainContentState(
     videoPlayerState: VideoPlayerState = rememberVideoPlayerState(),
     channelGroupListProvider: () -> ChannelGroupList = { ChannelGroupList() },
     favoriteChannelListProvider: () -> ChannelList = { ChannelList() },
+    epgListProvider: () -> EpgList = { EpgList() },
     settingsViewModel: SettingsViewModel = settingsVM,
 ): MainContentState {
     val favoriteChannelListProviderUpdated by rememberUpdatedState(favoriteChannelListProvider)
@@ -412,6 +438,7 @@ fun rememberMainContentState(
             videoPlayerState = videoPlayerState,
             channelGroupListProvider = channelGroupListProvider,
             favoriteChannelListProvider = favoriteChannelListProviderUpdated,
+            epgListProvider = epgListProvider,
             settingsViewModel = settingsViewModel,
         )
     }

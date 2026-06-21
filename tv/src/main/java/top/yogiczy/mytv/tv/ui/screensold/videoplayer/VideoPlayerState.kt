@@ -108,6 +108,7 @@ class VideoPlayerState(
     private val onInterruptListeners = mutableListOf<() -> Unit>()
     private val onIsBufferingListeners = mutableListOf<(Boolean) -> Unit>()
     private val onPositionListeners = mutableListOf<(Long) -> Unit>()
+    private val onEndedListeners = mutableListOf<() -> Unit>()
 
     fun onReady(listener: () -> Unit) {
         onReadyListeners.add(listener)
@@ -127,6 +128,10 @@ class VideoPlayerState(
 
     fun onPosition(listener: (Long) -> Unit) {
         onPositionListeners.add(listener)
+    }
+
+    fun onEnded(listener: () -> Unit) {
+        onEndedListeners.add(listener)
     }
 
     fun initialize() {
@@ -154,6 +159,7 @@ class VideoPlayerState(
         instance.onDurationChanged { duration = it }
         instance.onCurrentPositionChanged { currentPosition = it }
         instance.onPosition { onPositionListeners.forEach { cb -> cb(it) } }
+        instance.onEnded { onEndedListeners.forEach { it.invoke() } }
         instance.onMetadata { metadata = it }
         instance.onInterrupt { onInterruptListeners.forEach { it.invoke() } }
     }

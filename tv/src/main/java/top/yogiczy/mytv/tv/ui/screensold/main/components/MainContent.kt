@@ -68,6 +68,7 @@ fun MainContent(
         videoPlayerState = videoPlayerState,
         channelGroupListProvider = filteredChannelGroupListProvider,
         favoriteChannelListProvider = favoriteChannelListProvider,
+        epgListProvider = epgListProvider,
     )
     val channelNumberSelectState = rememberChannelNumberSelectState {
         val idx = it.toInt() - 1

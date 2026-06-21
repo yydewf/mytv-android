@@ -24,6 +24,7 @@ class IjkVideoPlayer(
 ) : VideoPlayer(coroutineScope),
     IMediaPlayer.OnPreparedListener,
     IMediaPlayer.OnVideoSizeChangedListener,
+    IMediaPlayer.OnCompletionListener,
     IMediaPlayer.OnErrorListener {
 
     private val player by lazy {
@@ -140,12 +141,14 @@ class IjkVideoPlayer(
         super.initialize()
         player.setOnPreparedListener(this)
         player.setOnVideoSizeChangedListener(this)
+        player.setOnCompletionListener(this)
         player.setOnErrorListener(this)
     }
 
     override fun release() {
         player.setOnPreparedListener(null)
         player.setOnVideoSizeChangedListener(null)
+        player.setOnCompletionListener(null)
         player.setOnErrorListener(null)
         player.stop()
         player.release()
@@ -244,6 +247,10 @@ class IjkVideoPlayer(
                 delay(500)
             }
         }
+    }
+
+    override fun onCompletion(player: IMediaPlayer) {
+        triggerEnded()
     }
 
     override fun onError(player: IMediaPlayer, what: Int, extra: Int): Boolean {

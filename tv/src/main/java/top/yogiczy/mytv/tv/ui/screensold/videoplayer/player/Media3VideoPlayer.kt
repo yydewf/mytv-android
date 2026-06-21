@@ -328,8 +328,7 @@ class Media3VideoPlayer(
             }
 
             if (playbackState == Player.STATE_ENDED) {
-                videoPlayer.seekToDefaultPosition()
-                videoPlayer.prepare()
+                triggerEnded()
             }
         }
 
