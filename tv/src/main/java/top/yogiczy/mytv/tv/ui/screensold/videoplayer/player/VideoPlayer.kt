@@ -138,9 +138,12 @@ abstract class VideoPlayer(
     protected fun triggerCurrentPosition(position: Long) {
         if (currentPosition != position) {
             interruptJob?.cancel()
-            interruptJob = coroutineScope.launch {
-                delay(Configs.videoPlayerLoadTimeout)
-                onInterruptListeners.forEach { it() }
+            val timeout = Configs.videoPlayerLoadTimeout
+            if (timeout > 0) {
+                interruptJob = coroutineScope.launch {
+                    delay(timeout)
+                    onInterruptListeners.forEach { it() }
+                }
             }
         }
         currentPosition = position

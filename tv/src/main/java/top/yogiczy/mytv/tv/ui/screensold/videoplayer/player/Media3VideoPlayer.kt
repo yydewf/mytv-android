@@ -245,16 +245,10 @@ class Media3VideoPlayer(
 
         override fun onPlayerError(ex: androidx.media3.common.PlaybackException) {
             when (ex.errorCode) {
-                // 如果是直播加载位置错误，尝试重新播放
-                androidx.media3.common.PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW,
-                androidx.media3.common.PlaybackException.ERROR_CODE_DECODING_FAILED,
-                androidx.media3.common.PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
-                androidx.media3.common.PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
-                androidx.media3.common.PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED -> {
-                    val currentPos = videoPlayer.currentPosition
+                // 仅针对直播加载位置错误尝试重新播放，其他IO/解码错误交由上层处理，避免死循环导致OOM
+                androidx.media3.common.PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW -> {
+                    videoPlayer.seekToDefaultPosition()
                     videoPlayer.prepare()
-                    videoPlayer.seekTo(currentPos)
-                    videoPlayer.play()
                 }
 
                 // 当解析容器不支持时，尝试使用其他解析容器

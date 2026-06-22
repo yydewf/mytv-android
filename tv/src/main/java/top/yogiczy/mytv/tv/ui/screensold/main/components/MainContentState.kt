@@ -51,6 +51,7 @@ class MainContentState(
     private val settingsViewModel: SettingsViewModel,
 ) : Loggable("MainContentState") {
     private var isInitialPlayback = true
+    private var lastSavedPositionTime = 0L
 
     private var _currentChannel by mutableStateOf(Channel())
     val currentChannel get() = _currentChannel
@@ -213,13 +214,17 @@ class MainContentState(
 
         videoPlayerState.onPosition { position ->
             if (_currentPlaybackEpgProgramme != null) {
-                // 只有在非缓冲且正在播放状态下才保存进度，避免保存跳转过程中的中间值
-                if (!videoPlayerState.isBuffering && videoPlayerState.isPlaying) {
-                    // 如果快到结尾了（最后 5 秒），就不要保存进度了，视为播放完成
-                    if (videoPlayerState.duration > 0 && position > videoPlayerState.duration - 5000) {
-                        settingsViewModel.iptvChannelLastPlaybackPosition = 0
-                    } else {
-                        settingsViewModel.iptvChannelLastPlaybackPosition = position
+                // 进一步降低保存频率至 5 秒，减轻内存和 I/O 压力
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastSavedPositionTime > 5000) {
+                    if (!videoPlayerState.isBuffering && videoPlayerState.isPlaying) {
+                        // 如果快到结尾了（最后 10 秒），就不要保存进度了
+                        if (videoPlayerState.duration > 0 && position > videoPlayerState.duration - 10000) {
+                            settingsViewModel.iptvChannelLastPlaybackPosition = 0
+                        } else {
+                            settingsViewModel.iptvChannelLastPlaybackPosition = position
+                        }
+                        lastSavedPositionTime = currentTime
                     }
                 }
             }
@@ -430,15 +435,17 @@ fun rememberMainContentState(
     epgListProvider: () -> EpgList = { EpgList() },
     settingsViewModel: SettingsViewModel = settingsVM,
 ): MainContentState {
+    val channelGroupListProviderUpdated by rememberUpdatedState(channelGroupListProvider)
     val favoriteChannelListProviderUpdated by rememberUpdatedState(favoriteChannelListProvider)
+    val epgListProviderUpdated by rememberUpdatedState(epgListProvider)
 
     return remember(settingsVM.videoPlayerCore) {
         MainContentState(
             coroutineScope = coroutineScope,
             videoPlayerState = videoPlayerState,
-            channelGroupListProvider = channelGroupListProvider,
+            channelGroupListProvider = channelGroupListProviderUpdated,
             favoriteChannelListProvider = favoriteChannelListProviderUpdated,
-            epgListProvider = epgListProvider,
+            epgListProvider = epgListProviderUpdated,
             settingsViewModel = settingsViewModel,
         )
     }
